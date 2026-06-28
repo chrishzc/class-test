@@ -1,10 +1,14 @@
 """
 File: app.py
-Description: 一個簡單的 Flask 網頁。訪問 "/" 顯示 "我是功能一"；訪問 "/user" 連線至 MySQL 資料庫，提供用戶資料的查詢、新增與刪除功能。
+Description: 一個簡單的 Flask 網頁。
+- 訪問 "/" 顯示 "我是功能一"；
+- 訪問 "/user" 連線至 MySQL 資料庫，提供用戶資料的查詢、新增與刪除功能；
+- 訪問 "/gcp" 則可指定 project-id，利用 GCP 預設憑證（ADC）瀏覽該 Project 的 Cloud Storage Buckets。
 """
 import os
 import pymysql
 from flask import Flask, request, redirect
+from google.cloud import storage
 
 app = Flask(__name__)
 
@@ -16,7 +20,7 @@ def get_db_connection():
         host=host,
         port=port,
         user="root",
-        password="rootpassword",
+        password="1234",
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor
     )
@@ -95,6 +99,34 @@ def delete_user(user_id):
     except Exception as e:
         return f"刪除失敗: {e}", 500
     return redirect("/user")
+
+@app.route("/gcp")
+def list_gcs_buckets():
+    project_id = request.args.get("project_id")
+    if not project_id:
+        return """
+        <h1>瀏覽 GCP Cloud Storage Buckets</h1>
+        <form action="/gcp" method="GET">
+            GCP Project ID: <input type="text" name="project_id" required>
+            <button type="submit">查詢</button>
+        </form>
+        """
+    try:
+        # 使用 Application Default Credentials (ADC)
+        client = storage.Client(project=project_id)
+        buckets = list(client.list_buckets())
+        
+        bucket_list = "".join([f"<li>{b.name}</li>" for b in buckets])
+        return f"""
+        <h1>Project: {project_id} 的 Buckets 列表</h1>
+        <ul>
+            {bucket_list if bucket_list else "<li>此專案下沒有任何 bucket</li>"}
+        </ul>
+        <br>
+        <a href="/gcp">重新查詢</a>
+        """
+    except Exception as e:
+        return f"查詢失敗: {e}", 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
