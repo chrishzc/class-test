@@ -1,0 +1,8 @@
+# File: docker-compose.yml
+# Description: 用於啟用 Flask 網頁應用程式容器的 Docker Compose 設定檔，將容器內的 5000 port 映射到主機的 80 port。
+
+services:
+  web:
+    build: .
+    ports:
+      - "80:5000"
