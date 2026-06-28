@@ -17,5 +17,7 @@ markupsafe==3.0.3
     #   flask
     #   jinja2
     #   werkzeug
+pymysql==1.2.0
+    # via cki101-project-demo (pyproject.toml)
 werkzeug==3.1.8
     # via flask

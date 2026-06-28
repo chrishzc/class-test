@@ -1,8 +1,23 @@
 # File: docker-compose.yml
-# Description: 用於啟用 Flask 網頁應用程式容器的 Docker Compose 設定檔，將容器內的 5000 port 映射到主機的 80 port。
+# Description: 用於啟用 Flask 網頁應用程式與 MySQL 8.4 資料庫容器的 Docker Compose 設定檔，將資料保存在本地 db_data 目錄，並透過環境變數傳遞資料庫連線資訊。
 
 services:
   web:
     build: .
     ports:
       - "80:5000"
+    environment:
+      DB_HOST: mysql.cki101
+      DB_PORT: 3306
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.4
+    container_name: mysql.cki101
+    ports:
+      - "8625:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ./db_data:/var/lib/mysql
